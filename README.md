@@ -1,1 +1,1 @@
-Time series analysis on seasonal and non seasonal data# Time-series-analysis
+Time series analysis on seasonal and non seasonal data
