@@ -1,0 +1,135 @@
+---
+title: ""
+output: html_document
+date: '2023-05-04'
+---
+
+```{r setup}
+
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+require("rugarch")
+library("forecast")
+library("aTSA")
+library("TSA")
+library("sqldf")
+library("CADFtest")
+NYUnemployment <- read.csv("NYUR.csv", header = TRUE)
+summary(NYUnemployment)
+NYUnemployment
+dim(NYUnemployment)
+head(NYUnemployment)
+# Create a new data.frame with the newly formatted date field
+
+# mutate(DATE = as.Date(DATE, format = "%y-%m-%d"))
+# convert date column to date class
+NYUnemployment$DATE <- as.Date(NYUnemployment$DATE,format = "%Y-%m-%d")
+# view R class of data
+class(NYUnemployment$DATE)
+## [1] "Date"
+# view results
+head(NYUnemployment$DATE)
+
+summary(NYUnemployment)
+NYUnemployment
+plot(NYUnemployment$DATE, NYUnemployment$NYUR,xlab="Year",ylab="New York Unemployment
+Index")
+dts=ts(NYUnemployment$NYUR,frequency = 4, start=c(1976,1))
+
+plot(window(dts,start=c(1976,1)),ylab="New York Unemployment Index",xlab="Year")
+adf.test(dts)
+CADFtest(dts)
+acf(as.vector(dts), lag.max = 100)
+pacf(as.vector(dts), lag.max = 50)
+eacf(as.vector(dts))
+dts1=diff(dts)
+plot(window(dts1,start=c(1977,1)),ylab="New York Unemployment Index",xlab="Year")
+adf.test(dts1)
+CADFtest(dts1)
+#lot of lags
+acf(as.vector(dts1), lag.max = 100)
+pacf(as.vector(dts1), lag.max = 50)
+eacf(as.vector(dts1))
+
+arimap=arima(dts,order=c(2,2,1))
+arimap
+plot(window(residuals(arimap),start=c(1976,1)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+acf(as.vector(window(rstandard(arimap),start=c(1976,1))),lag.max=100)
+hist(window(rstandard(arimap),start=c(1976,1)),xlab='Standardized Residuals')
+qqnorm(window(residuals(arimap),start=c(1976,1)))
+qqline(window(residuals(arimap),start=c(1976,1)))
+auto.arima(dts)
+auto.arima(dts1)
+#--------------------------
+arima1p=arima(dts,order=c(3,3,1))
+arima1p
+plot(window(residuals(arima1p),start=c(1976,1)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+acf(as.vector(window(rstandard(arima1p),start=c(1976,1))),lag.max=100)
+hist(window(rstandard(arima1p),start=c(1976,1)),xlab='Standardized Residuals')
+qqnorm(window(residuals(arima1p),start=c(1976,1)))
+qqline(window(residuals(arima1p),start=c(1976,1)))
+
+arima2p=arima(dts,order=c(2,3,1))
+arima2p
+plot(window(residuals(arima2p),start=c(1976,1)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+acf(as.vector(window(rstandard(arima2p),start=c(1976,1))),lag.max=100)
+hist(window(rstandard(arima2p),start=c(1976,1)),xlab='Standardized Residuals')
+qqnorm(window(residuals(arima2p),start=c(1976,1)))
+qqline(window(residuals(arima2p),start=c(1976,1)))
+
+
+
+acf(dts1^2,lag.max=70)
+pacf(dts1^2,lag.max=70)
+acf(abs(dts1),lag.max=70)
+#Abs for garch because square lags are below threshold thus Garch for implementation
+pacf(abs(dts1),lag.max=70)
+
+
+
+
+garchparameter <- function(p,q){
+  arch <- garch(abs(dts1), order = c(p,q), method = 'ML', trace = F)
+  loglik <- logLik(arch)
+  print(loglik)
+  print(AIC(arch))
+}
+
+garchparameter(2,3)
+garchparameter(2,4)
+garchparameter(2,2) #this is the model for garch
+
+
+install.packages("fGarch")
+library(fGarch)
+data.fit = garchFit(formula = ~garch(2,2),data = dts)
+summary(data.fit)
+m.11 = garch(abs(dts1),order=c(2,2))
+summary(m.11)
+plot((fitted(m.11)[,1])^2,type='l',ylab='Conditional Variance',xlab='t',main="Estimated 
+Conditional Variances of the Daily Returns")
+fGarch::predict(data.fit,n.ahead=7,trace=FALSE,plot=TRUE)
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

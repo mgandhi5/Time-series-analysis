@@ -1,0 +1,110 @@
+---
+title: "Non Seasonal"
+output: html_document
+date: '2023-05-03'
+---
+
+
+
+```{r cars}
+require("rugarch")
+library("forecast")
+library("aTSA")
+library("TSA")
+library("sqldf")
+library("CADFtest")
+NYUnemployment <- read.csv("NYUR.csv", header = TRUE)
+summary(NYUnemployment)
+NYUnemployment
+dim(NYUnemployment)
+head(NYUnemployment)
+
+NYUnemployment$DATE <- as.Date(NYUnemployment$DATE, format = "%Y-%m-%d")
+class(NYUnemployment$DATE)
+head(NYUnemployment$DATE)
+
+summary(NYUnemployment)
+NYUnemployment
+plot(NYUnemployment$DATE, NYUnemployment$NYUR,xlab="Year",ylab="New York UnemploymentRate")
+
+dts=ts(NYUnemployment$NYUR,frequency = 4, start=c(1976,1))
+
+plot(window(dts,start=c(1976,1)),ylab="New York Unemployment Rate",xlab="Year")
+adf.test(dts)
+CADFtest(dts)
+
+acf(as.vector(dts), lag.max = 100)
+pacf(as.vector(dts), lag.max = 50)
+eacf(as.vector(dts))
+
+dts1=diff(dts)
+plot(window(dts1,start=c(1976,1)),ylab="New York Unemployment Rate",xlab="Year")
+adf.test(dts1)
+CADFtest(dts1)
+acf(as.vector(dts1), lag.max = 100)
+pacf(as.vector(dts1), lag.max = 50)
+eacf(as.vector(dts1))
+dts2=diff(dts1)
+plot(window(dts1,start=c(1976,1)),ylab="New York Unemployment Rate",xlab="Year")
+adf.test(dts2)
+CADFtest(dts2)
+
+acf(as.vector(dts2), lag.max = 100)
+pacf(as.vector(dts2), lag.max = 50)
+eacf(as.vector(dts2))
+arimap=arima(dts,order=c(2,2,2))
+arimap
+plot(window(residuals(arimap),start=c(1976,1)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+acf(as.vector(window(rstandard(arimap),start=c(1976,1))),lag.max=100)
+hist(window(rstandard(arimap),start=c(1976,1)),xlab='Standardized Residuals')
+qqnorm(window(residuals(arimap),start=c(1976,1)))
+qqline(window(residuals(arimap),start=c(1976,1)))
+auto.arima(dts)
+auto.arima(dts2)
+
+arima1p=arima(dts,order=c(2,2,1))
+arima1p
+plot(window(residuals(arima1p),start=c(1976,1)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+acf(as.vector(window(rstandard(arima1p),start=c(1976,1))),lag.max=100)
+hist(window(rstandard(arima1p),start=c(1976,1)),xlab='Standardized Residuals')
+qqnorm(window(residuals(arima1p),start=c(1976,1)))
+qqline(window(residuals(arima1p),start=c(1976,1))
+#--------------------------------------------------------------------------------------------------------------
+
+arima2p=arima(dts,order=c(3,2,2))
+arima2p
+plot(window(residuals(arima2p),start=c(1976,1)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+acf(as.vector(window(rstandard(arima2p),start=c(1976,1))),lag.max=100)
+hist(window(rstandard(arima2p),start=c(1976,1)),xlab='Standardized Residuals')
+qqnorm(window(residuals(arima2p),start=c(1976,1)))
+qqline(window(residuals(arima2p),start=c(1976,1)))
+
+      
+
+
+       
+
+       
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure}
+arima2p=arima(dts,order=c(3,2,2))
+arima2p
+plot(window(residuals(arima2p),start=c(1976,1)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+acf(as.vector(window(rstandard(arima2p),start=c(1976,1))),lag.max=100)
+hist(window(rstandard(arima2p),start=c(1976,1)),xlab='Standardized Residuals')
+qqnorm(window(residuals(arima2p),start=c(1976,1)))
+qqline(window(residuals(arima2p),start=c(1976,1)))
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

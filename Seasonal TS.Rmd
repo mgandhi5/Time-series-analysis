@@ -1,0 +1,93 @@
+---
+title: "Project"
+output: html_document
+date: '2023-05-03'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+library("CADFtest")
+library("forecast")
+library("aTSA")
+library("TSA")
+library("tseries")
+library("sqldf")
+airTraffic <- read.csv("Air_Traffic_Passenger_Statistics.csv", header = TRUE)
+summary(airTraffic)
+dim(airTraffic)
+head(airTraffic)
+
+dim(airTraffic)
+head(airTraffic)
+cond_ = (airTraffic$Published.Airline.IATA.Code %in%
+c("KL"))&(airTraffic$Adjusted.Activity.Type.Code %in% c("Enplaned"))
+dataFrame = airTraffic[cond_,]
+dataFrame
+
+plot(dataFrame$Year, dataFrame$Adjusted.Passenger.Count,xlab="Year",ylab="Adjusted Passenger
+Count")
+
+dts=ts(dataFrame$Adjusted.Passenger.Count,frequency = 12, start=c(2005,7))
+plot(window(dts,start=c(2005,7)),ylab="Adjusted Passenger Count", xlab="Year")
+mon = c('J','A','S','O','N','D','J','F','M','A','M','J')
+points(window(dts,start=c(2005,7)), pch=mon)
+adf.test(dts)
+CADFtest(dts)
+
+acf(as.vector(dts), lag.max = 100)
+pacf(as.vector(dts), lag.max = 50)
+eacf(as.vector(dts))
+
+dts1 = diff(dts,lag=12)
+plot(dts1,ylab='First Seasonal Difference of utility',xlab='Time')
+adf.test(dts1)
+CADFtest(dts1)
+acf(as.vector(dts1), lag.max = 100)
+pacf(as.vector(dts1), lag.max = 50)
+eacf(as.vector(dts1))
+
+sarima=arima(dts,order=c(1,1,3),seasonal=list(order=c(2,1,1),period=12))
+sarima
+plot(window(residuals(sarima),start=c(2005,7)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+acf(as.vector(window(rstandard(sarima),start=c(2005,7))),lag.max=100)
+hist(window(rstandard(sarima),start=c(2005,7)),xlab='Standardized Residuals')
+qqnorm(window(residuals(sarima),start=c(2005,7)))
+qqline(window(residuals(sarima),start=c(2005,7)))
+tsdiag(sarima,gof=36,omit.initial=F)
+auto.arima(dts)
+
+sarima1=arima(dts,order=c(1,0,0),seasonal=list(order=c(0,1,1),period=12))
+sarima1
+plot(window(residuals(sarima1),start=c(2005,7)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+acf(as.vector(window(rstandard(sarima1),start=c(2005,7))),lag.max=100)
+hist(window(rstandard(sarima1),start=c(2005,7)),xlab='Standardized Residuals')
+qqnorm(window(residuals(sarima1),start=c(2005,7)))
+qqline(window(residuals(sarima1),start=c(2005,7)))
+tsdiag(sarima1,gof=36,omit.initial=F)
+
+sarima2=arima(dts1,order=c(2,0,1),seasonal=list(order=c(0,0,1),period=12))
+sarima2
+plot(window(residuals(sarima2),start=c(2005,7)),ylab='Standardized Residuals',type='o')
+abline(h=0)
+acf(as.vector(window(rstandard(sarima2),start=c(2005,7))),lag.max=100)
+hist(window(rstandard(sarima2),start=c(2005,7)),xlab='Standardized Residuals')
+qqnorm(window(residuals(sarima2),start=c(2005,7)))
+qqline(window(residuals(sarima2),start=c(2005,7)))
+tsdiag(sarima2,gof=36,omit.initial=F)
+fsarima=arima(dts,order=c(1,1,3),seasonal=list(order=c(2,1,1),period=12))
+plot(fsarima, n1 = c(2005,7), n.ahead = 24, col = "red", xlab = "Year",ylab = "Number of passenger")
+
+
+```
+
